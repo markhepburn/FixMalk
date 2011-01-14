@@ -1,7 +1,8 @@
 #!/usr/bin/env python2.5
 
-import cStringIO as StringIO
+from cStringIO import StringIO
 import logging
+import urllib2
 import web
 import xml.etree.ElementTree as et
 
@@ -17,9 +18,26 @@ linktype = 'application/epub' # +zip, sometimes
 class Handler(object):
     def GET(self, req):
         logging.debug('got request "%s"' % req)
-        return 'ping -> pong'
+        # correct if necessary, then pass on request:
+        if req in ('', '/'):
+            req = req + 'list.xml'
+        if req[0] == '/':
+            req = req[1:]
+        logging.debug('will request "%s"' % req)
+
+        fullrequest = urllib2.Request(remote_url + req)
+        opener = urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
+        remoteresponse = opener.open(fullrequest)
+
+        fixedresponse = fixLinks(remoteresponse)
+        logging.debug('passing back corrected response:' + fixedresponse)
+        return fixedresponse
 
 def fixLinks(xml):
+    """Fix up download links by adding the right rel-attribute value.
+    Note that we currently rely on href values being relative, but
+    this could also be corrected for."""
+
     tree = et.parse(xml)
     for link in tree.getiterator(nslink):
         if link.get('type').startswith(linktype):
