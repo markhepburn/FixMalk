@@ -2,7 +2,7 @@
 
 from cStringIO import StringIO
 import logging
-import urllib2
+import urllib, urllib2
 import web
 import web.webapi
 import xml.etree.ElementTree as et
@@ -14,7 +14,7 @@ routes = (
 remote_url = 'http://www.drinkmalk.com/books/'
 nslink = '{http://www.w3.org/2005/Atom}link'
 relaccess = 'http://opds-spec.org/acquisition/open-access'
-linktype = 'application/epub' # +zip, sometimes
+linktype = 'application/epub'   # ...+zip, sometimes
 
 class Handler(object):
     def GET(self, req):
@@ -24,6 +24,10 @@ class Handler(object):
             req = req + 'list.xml'
         if req[0] == '/':
             req = req[1:]
+
+        params = urllib.urlencode(web.input())
+        if params:
+            req = req + '?' + params
         logging.debug('will request "%s"' % req)
 
         fullrequest = urllib2.Request(remote_url + req)
@@ -31,9 +35,12 @@ class Handler(object):
         remoteresponse = opener.open(fullrequest)
         logging.debug(remoteresponse.info())
 
+        remoteContentType = remoteresponse.info()['Content-Type']
+        logging.debug("Remote content-type: %s" % remoteContentType)
+
         fixedresponse = fixLinks(remoteresponse)
         logging.debug('passing back corrected response:' + fixedresponse)
-        web.webapi.header('Content-Type', 'application/xml')
+        web.webapi.header('Content-Type', remoteContentType)
         return fixedresponse
 
 def fixLinks(xml):
