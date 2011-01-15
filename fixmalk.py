@@ -4,6 +4,7 @@ from cStringIO import StringIO
 import logging
 import urllib2
 import web
+import web.webapi
 import xml.etree.ElementTree as et
 
 routes = (
@@ -28,9 +29,11 @@ class Handler(object):
         fullrequest = urllib2.Request(remote_url + req)
         opener = urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
         remoteresponse = opener.open(fullrequest)
+        logging.debug(remoteresponse.info())
 
         fixedresponse = fixLinks(remoteresponse)
         logging.debug('passing back corrected response:' + fixedresponse)
+        web.webapi.header('Content-Type', 'application/xml')
         return fixedresponse
 
 def fixLinks(xml):
@@ -44,7 +47,7 @@ def fixLinks(xml):
             link.set('rel', relaccess)
     outputstr = StringIO()
     tree.write(outputstr)
-    return outputstr.getvalue()
+    return '<?xml version="1.0"?>' + outputstr.getvalue()
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
