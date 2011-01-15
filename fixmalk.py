@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 
 from cStringIO import StringIO
 import logging
@@ -35,13 +35,19 @@ class Handler(object):
         remoteresponse = opener.open(fullrequest)
         logging.debug(remoteresponse.info())
 
+        # Just pass on the remote Content-Type:
         remoteContentType = remoteresponse.info()['Content-Type']
         logging.debug("Remote content-type: %s" % remoteContentType)
-
-        fixedresponse = fixLinks(remoteresponse)
-        logging.debug('passing back corrected response:' + fixedresponse)
         web.webapi.header('Content-Type', remoteContentType)
-        return fixedresponse
+
+        # If response is an xml document, clean it up and return, else
+        # just pass through (eg, if it's a download):
+        if remoteContentType.startswith('application/xml'):
+            fixedresponse = fixLinks(remoteresponse)
+            logging.debug('passing back corrected response:' + fixedresponse)
+            return fixedresponse
+        else:
+            return remoteresponse
 
 def fixLinks(xml):
     """Fix up download links by adding the right rel-attribute value.
