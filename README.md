@@ -1,5 +1,9 @@
 # FixMalk
 
+Note: This is now out of date; the issue this hack addresses has been resolved (really, I don't know why I didn't just contact them directly, other than the fun of the hack and then forgetting about it.  Next time).
+[](http://drinkmalk.com/stanza/node/3214)
+[](http://www.drinkmalk.com/stanza/node/3234)
+
 [DrinkMalk](http://www.drinkmalk.com) is an eBook catalogue, however
 the 2.0 release of the [Aldiko](http://www.aldiko.com) reader for
 android is unable to downloads (you can still browse the catalogue).
